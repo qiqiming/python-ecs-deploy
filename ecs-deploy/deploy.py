@@ -9,17 +9,16 @@ logging.basicConfig(format='%(message)s', level=logging.INFO)
 LOG = logging.getLogger(__name__)
 
 
-
 def parse_image(image_name):
     pattern = re.compile(r'^([a-zA-Z0-9\.\-]+:?[0-9]+?/[a-zA-Z0-9\._\-]+/[\/a-zA-Z0-9\._\-]+?):?([a-zA-Z0-9\._\-]+)?$')
-    m = re.match(pattern, image_name)    
+    m = re.match(pattern, image_name)
     if m is None:
         pattern = re.compile(r'^([\/a-zA-Z0-9\._\-]+?):?([a-zA-Z0-9\._\-]+)?$')
         m = re.match(pattern, image_name)
     if m is None:
         exit('Error image name, Please check it')
     return m.group(1), m.group(2) if m.group(2) else 'lasted'
-    
+
 
 class ECSDeploy(object):
 
@@ -27,7 +26,7 @@ class ECSDeploy(object):
         self.cluster = cluster
         self.service = service
         # [(image_name, image_tag), (image_name, image_tag) ...]
-        self.images = [parse_image(image) for image in images] if images else []  
+        self.images = [parse_image(image) for image in images] if images else []
         self.client = boto3.client(service_name='ecs', **kwargs)
         self.current_task_definition = self.get_current_task_definition()
 
@@ -40,14 +39,14 @@ class ECSDeploy(object):
         new_task_definition = task_definition
         if not new_task_definition.get('containerDefinitions') or len(new_task_definition['containerDefinitions']) < 1:
             exit('Can not container definitions')
-        
+
         images_dict = dict(self.images)
 
         for container_definition in new_task_definition['containerDefinitions']:
             image, _ = parse_image(container_definition.get('image'))
             if image in images_dict:
                 container_definition['image'] = '{}:{}'.format(image, images_dict[image])
-        
+
         for key in ('compatibilities', 'requiresAttributes', 'revision', 'status', 'taskDefinitionArn'):
             new_task_definition.pop(key, None)
 
@@ -64,11 +63,11 @@ class ECSDeploy(object):
         while not tasks:
             time.sleep(1)
             tasks = self.client.list_tasks(
-                cluster=self.cluster, 
+                cluster=self.cluster,
                 serviceName=self.service, 
                 desiredStatus='RUNNING'
             ).get('taskArns')
-            print("debug: ", tasks)
+            LOG.debug("tasks: %s" % tasks)
             for task_info in self.client.describe_tasks(cluster=self.cluster, tasks=tasks).get('tasks', []):
                 if task_info['taskDefinitionArn'] != task_definition_arn:
                     tasks.remove(task_info['taskArn'])
@@ -104,4 +103,4 @@ class ECSDeploy(object):
         waiter = self.client.get_waiter('services_stable')
         waiter.wait(cluster=self.cluster, services=[self.service])
 
-        print("Done")
+        LOG.info("Service deployment successful.")

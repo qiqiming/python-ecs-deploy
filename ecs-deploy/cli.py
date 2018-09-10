@@ -1,13 +1,16 @@
+import logging
 import argparse
 import os
 
 from deploy import ECSDeploy
 
+LOG = logging.getLogger(__name__)
 
-def main():
+
+def parse():
     parser = argparse.ArgumentParser(
-        description='ecs-deploy', 
-        formatter_class=argparse.RawTextHelpFormatter, 
+        description='ecs-deploy',
+        formatter_class=argparse.RawDescriptionHelpFormatter, 
         usage='%(prog)s [options]'
     )
     parser.add_argument(
@@ -16,7 +19,6 @@ def main():
         help='AWS Access Key ID. May also be set as environment variable AWS_ACCESS_KEY_ID',
     )
     parser.add_argument(
-        '-s', '--aws-secret-key',
         dest='aws_secret_access_key',
         help='AWS Secret Access Key. May also be set as environment variable AWS_SECRET_ACCESS_KEY'
     )
@@ -26,23 +28,28 @@ def main():
         help='AWS Region Name. May also be set as environment variable AWS_DEFAULT_REGION'
     )
     parser.add_argument(
-        '-c', '--cluster', 
+        '-c', '--cluster',
         metavar='cluster_name', required=True,
         help='Name of ECS cluster'
     )
     parser.add_argument(
         '-n', '--service-name',
         metavar='service_name', dest='service',
-        help='Name of service to deploy'
+        help='''Name of service to deploy'''
     )
     parser.add_argument(
         '-i', '--images',
         metavar='images', nargs='+', required=True,
         help='''Name of Docker image to run(support multiple images) \nex: --images repo/image:1.0 repo2/image2:8.0'''
     )
+    parser.print_help()
     kwargs = vars(parser.parse_args())
-    print(kwargs)
+    LOG.debug("arg params: %s" % kwargs)
+    return kwargs
 
+
+def main():
+    kwargs = parse()
     # get value from environment variable
     kwargs.setdefault('aws_access_key_id', os.environ.get('AWS_ACCESS_KEY_ID', None))
     kwargs.setdefault('aws_secret_access_key', os.environ.get('AWS_SECRET_ACCESS_KEY', None))
