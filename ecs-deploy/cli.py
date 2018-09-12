@@ -10,15 +10,15 @@ LOG = logging.getLogger(__name__)
 def parse():
     parser = argparse.ArgumentParser(
         description='ecs-deploy',
-        formatter_class=argparse.RawDescriptionHelpFormatter, 
-        usage='%(prog)s [options]'
+        formatter_class=lambda prog: argparse.RawTextHelpFormatter(prog,max_help_position=80, width=200),
     )
     parser.add_argument(
         '-k', '--aws-access-key',
-        dest='aws_access_key_id',
+        # dest='aws_access_key_id',
         help='AWS Access Key ID. May also be set as environment variable AWS_ACCESS_KEY_ID',
     )
     parser.add_argument(
+        '-s', '--aws-secret-key',
         dest='aws_secret_access_key',
         help='AWS Secret Access Key. May also be set as environment variable AWS_SECRET_ACCESS_KEY'
     )
@@ -42,7 +42,21 @@ def parse():
         metavar='images', nargs='+', required=True,
         help='''Name of Docker image to run(support multiple images) \nex: --images repo/image:1.0 repo2/image2:8.0'''
     )
-    parser.print_help()
+    parser.add_argument(
+        '--min',
+        type=int,
+        help='minumumHealthyPercent: The lower limit on the number of running tasks during a deployment.'
+    )
+    parser.add_argument(
+        '--max',
+        type=int,
+        help='maximumPercent: The upper limit on the number of running tasks during a deployment.'
+    )
+    parser.add_argument(
+        '--max-definitions',
+        type=int, default=1,
+        help='Number of Task Definition Revisions to persist before deregistering oldest revisions. (default: 1)'
+    )
     kwargs = vars(parser.parse_args())
     LOG.debug("arg params: %s" % kwargs)
     return kwargs
