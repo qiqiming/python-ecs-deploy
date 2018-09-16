@@ -1,5 +1,5 @@
-import logging
 import argparse
+import logging
 import os
 
 from deploy import ECSDeploy
@@ -10,11 +10,11 @@ LOG = logging.getLogger(__name__)
 def parse():
     parser = argparse.ArgumentParser(
         description='ecs-deploy',
-        formatter_class=lambda prog: argparse.RawTextHelpFormatter(prog,max_help_position=80, width=200),
+        formatter_class=lambda prog: argparse.RawTextHelpFormatter(prog, max_help_position=80, width=300),
     )
     parser.add_argument(
         '-k', '--aws-access-key',
-        # dest='aws_access_key_id',
+        dest='aws_access_key_id',
         help='AWS Access Key ID. May also be set as environment variable AWS_ACCESS_KEY_ID',
     )
     parser.add_argument(
@@ -44,18 +44,23 @@ def parse():
     )
     parser.add_argument(
         '--min',
-        type=int,
+        metavar='minumumHealthyPercent', dest='minumum_healthy', type=int,
         help='minumumHealthyPercent: The lower limit on the number of running tasks during a deployment.'
     )
     parser.add_argument(
         '--max',
-        type=int,
+        metavar='maximumPercent', dest='maximum_percent', type=int,
         help='maximumPercent: The upper limit on the number of running tasks during a deployment.'
     )
     parser.add_argument(
         '--max-definitions',
-        type=int, default=1,
+        metavar='max-definitions', dest='max_definitions', type=int, default=1,
         help='Number of Task Definition Revisions to persist before deregistering oldest revisions. (default: 1)'
+    )
+    parser.add_argument(
+        '-D', '--desired-count',
+        metavar='desired-count', dest='desired_count', type=int,
+        help='The number of instantiations of the task to place and keep running in your service.'
     )
     kwargs = vars(parser.parse_args())
     LOG.debug("arg params: %s" % kwargs)
@@ -69,11 +74,22 @@ def main():
     kwargs.setdefault('aws_secret_access_key', os.environ.get('AWS_SECRET_ACCESS_KEY', None))
     kwargs.setdefault('region_name', os.environ.get('AWS_DEFAULT_REGION', None))
 
+    minumum_healthy = kwargs.pop('minumum_healthy', None)
+    maximum_percent = kwargs.pop('maximum_percent', None)
+    max_definitions = kwargs.pop('max_definitions', 1)
+    desired_count = kwargs.pop('desired_count', None)
+
     ecs = ECSDeploy(**kwargs)
     current_task_def = ecs.get_current_task_definition()
     new_task_def = ecs.create_new_task_definition(current_task_def)
     task_def_arn = ecs.register_task_definition(new_task_def)
-    ecs.update_service(task_definition_arn=task_def_arn)
+    ecs.update_service(
+        task_definition_arn=task_def_arn,
+        minimum_healthy_percent=minumum_healthy,
+        maximum_percent=maximum_percent,
+        max_definitions=max_definitions,
+        desired_count=desired_count
+    )
 
 
 if __name__ == '__main__':
