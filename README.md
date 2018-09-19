@@ -1,4 +1,7 @@
-# python-ecs-deploy
+# python-ecs-deploy
+
+[![GitHub](https://img.shields.io/github/license/qiqiming/python-ecs-deploy.svg)](https://github.com/qiqiming/python-ecs-deploy/blob/master/LICENSE)
+[![PyPI](https://img.shields.io/pypi/v/python-ecs-deploy.svg?style=popout)](https://pypi.org/project/python-ecs-deploy/)
 
 inspired by <https://github.com/silinternational/ecs-deploy>, rewrite use python3
 
@@ -7,8 +10,6 @@ It only updates the tag of the images in the task definition with the same image
 This allows you to easily implement CI/CD
 
 ## usage
-
---------
 ```
 ecs-deploy
 
@@ -34,8 +35,6 @@ ecs-deploy -c test_cluster -n test_service -i aaa/foo:1.1 bbb/bar:3.0
 ```
 
 ## Installation
-
---------
 
 ```
 pip install python-ecs-deply
