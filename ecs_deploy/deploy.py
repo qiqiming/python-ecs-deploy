@@ -85,7 +85,7 @@ class ECSDeploy(object):
         return tasks
 
     def update_service(self, task_definition_arn, maximum_percent=None, minimum_healthy_percent=None,
-                       desired_count=None, max_definitions=1):
+                       desired_count=None, max_definitions=1, scale_mode=False):
         params = dict(
             taskDefinition=task_definition_arn,
             deploymentConfiguration=dict(
@@ -111,9 +111,10 @@ class ECSDeploy(object):
             sort='ASC'
         ).get('taskDefinitionArns')
 
-        for task_definition in all_task_definition_revisions[:-max_definitions]:
-            LOG.info("Deregistering task: %s" % task_definition)
-            self.client.deregister_task_definition(taskDefinition=task_definition)
+        if scale_mode is False:
+            for task_definition in all_task_definition_revisions[:-max_definitions]:
+                LOG.info("Deregistering task: %s" % task_definition)
+                self.client.deregister_task_definition(taskDefinition=task_definition)
 
         LOG.info("Waiting service stable")
         waiter = self.client.get_waiter('services_stable')
