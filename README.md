@@ -22,6 +22,7 @@ optional arguments:
   -n service_name, --service-name service_name                      Name of service to deploy
   -i images [images ...], --images images [images ...]              Name of Docker image to run(support multiple images)
                                                                     ex: --images repo/image:1.0 repo2/image2:8.0
+  --scale nums                                                      Modifies the number(positive) of container instances of the current Task Definition
 ```
 
 ## example
@@ -34,10 +35,16 @@ Update the service with the new image:
 ecs-deploy -c test_cluster -n test_service -i aaa/foo:1.1 bbb/bar:3.0
 ```
 
+Scale current service number of tasks
+
+```
+ecs-deploy -c test_cluster -n test_service --scale 5
+```
+
 ## Installation
 
 ```
-pip install python-ecs-deply
+pip install python-ecs-depl
 ```
 
 
