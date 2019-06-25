@@ -68,7 +68,7 @@ class ECSDeploy(object):
         LOG.info("New task definition: %s" % resp['taskDefinition']['taskDefinitionArn'])
         return resp['taskDefinition']['taskDefinitionArn']
 
-    def get_revison_tasks(self, task_definition_arn):
+    def get_revision_tasks(self, task_definition_arn):
         tasks = []
         while not tasks:
             time.sleep(1)
@@ -100,7 +100,7 @@ class ECSDeploy(object):
         resp = self.client.update_service(cluster=self.cluster, service=self.service, **params)
         print("Update: ")
         pprint.pprint(resp, indent=4)
-        tasks = self.get_revison_tasks(task_definition_arn)
+        tasks = self.get_revision_tasks(task_definition_arn)
         waiter = self.client.get_waiter('tasks_running')
         waiter.wait(cluster=self.cluster, tasks=tasks)
         LOG.info('New task definition running.')
