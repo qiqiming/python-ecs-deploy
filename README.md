@@ -44,7 +44,5 @@ ecs-deploy -c test_cluster -n test_service --scale 5
 ## Installation
 
 ```
-pip install python-ecs-depl
+pip install python-ecs-deploy
 ```
-
-
